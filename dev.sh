@@ -1,0 +1,1 @@
+uvicorn modules.main.server:app --reload
