@@ -40,6 +40,15 @@ async def startup_event():
             [Product, ProductType, Client, Sale, SaleProduct]
         )
 
+    # add initial data
+    # TODO NEED TO REFACTORY THIS
+    for name in ["Home", "Car", "Eletronic"]:
+        if ProductType.select().where(ProductType.name == name).count() == 0:
+            ProductType.create(name=name)
+
+    ProductType.get(name="Car")
+    ProductType.get(name="Eletronic")
+
 
 @app.get("/")
 async def root():

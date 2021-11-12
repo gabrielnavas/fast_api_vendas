@@ -111,3 +111,14 @@ def get_all(
     except Exception as ex:
         print(ex)
         response.status_code = 500
+
+
+@route.get("/product_type", status_code=200, tags=["product"])
+def get_all_products_type(response: Response):
+    try:
+        products = product_usecase.get_all_products_type()
+        products = [model_to_dict(product) for product in products]
+        return products
+    except Exception as ex:
+        print(ex)
+        response.status_code = 500

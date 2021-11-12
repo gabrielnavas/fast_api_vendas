@@ -1,5 +1,8 @@
+import functools
 from typing import Dict, Any, List
 from .models import Product, ProductType
+import functools
+import operator
 
 
 class ProductUsecase:
@@ -44,23 +47,40 @@ class ProductUsecase:
     def get_all(
         self, query: Dict[str, Any], offset=0, limit=10
     ) -> List[Product]:
-        if len(query) > 0:
-            products = (
+        query_list = [
+            Product.name.contains(query["name"])
+            if query["name"] is not None and len(query["name"]) > 0
+            else None,
+            Product.price == query["amount"]
+            if query["amount"] is not None and query["amount"] > 0
+            else None,
+            Product.price == query["price"]
+            if query["price"] is not None and query["price"] > 0
+            else None,
+            ProductType.name.contains(query["product_type_name"])
+            if query["product_type_name"] is not None
+            and len(query["product_type_name"]) > 0
+            else None,
+        ]
+        query_list_remove_none = list(
+            filter(lambda query: query is not None, query_list)
+        )
+
+        if len(query_list_remove_none) > 0:
+            query_or_operator = functools.reduce(
+                operator.or_, query_list_remove_none
+            )
+            return (
                 Product.select()
                 .join(ProductType)
-                .where(
-                    (Product.name.contains(query.get("name", "")))
-                    | (Product.amount == query.get("amount", ""))
-                    | (Product.price == query.get("price", ""))
-                    | (
-                        ProductType.name.contains(
-                            query.get("product_type_name", "")
-                        )
-                    )
-                )
+                .where(query_or_operator)
                 .offset(offset)
                 .limit(limit)
             )
-            return products
         else:
-            return Product.select().offset(offset).limit(limit)
+            return (
+                Product.select().join(ProductType).offset(offset).limit(limit)
+            )
+
+    def get_all_products_type(self) -> List[Product]:
+        return ProductType.select()

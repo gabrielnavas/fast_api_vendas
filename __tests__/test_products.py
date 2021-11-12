@@ -122,7 +122,7 @@ def test_get_one_product():
     assert product["product_type"]["name"] == home.name
 
 
-def test_get_one_all_products():
+def test_get_all_products():
     len_products = 11
     products = []
     home = None
@@ -148,3 +148,98 @@ def test_get_one_all_products():
     assert response.status_code == 200
     products_from_response = response.json()
     assert len(products_from_response) == 9
+
+
+def test_get_all_products_without_params():
+    len_products = 10
+    products = []
+
+    home = None
+    for n in range(len_products):
+        home = ProductType.create(name="Home" + str(n))
+        response = client.post(
+            f"/product",
+            json={
+                "name": "Apple",
+                "amount": 44,
+                "price": 22.11,
+                "product_type_id": home.id,
+            },
+        )
+        assert response.status_code == 201
+        product = response.json()
+        assert product["id"] > 0
+        products.append(product)
+
+    response = client.get("/product")
+    assert response.status_code == 200
+    products_from_response = response.json()
+    assert len(products_from_response) == len_products
+
+
+def test_get_all_products_with_offset_limit():
+    len_products = 11
+    products = []
+    home = None
+    for n in range(len_products):
+        home = ProductType.create(name="Home" + str(n))
+        response = client.post(
+            f"/product",
+            json={
+                "name": "Apple",
+                "amount": 44,
+                "price": 22.11,
+                "product_type_id": home.id,
+            },
+        )
+        assert response.status_code == 201
+        product = response.json()
+        assert product["id"] > 0
+        products.append(product)
+
+    response = client.get("/product?offset=0&limit=10")
+    assert response.status_code == 200
+    products_from_response = response.json()
+    assert len(products_from_response) == 10
+
+
+def test_get_all_products_with_home():
+    len_products = 11
+    products = []
+    home = None
+    for n in range(len_products):
+        home = ProductType.create(name="Home" + str(n))
+        response = client.post(
+            f"/product",
+            json={
+                "name": "Apple",
+                "amount": 44,
+                "price": 22.11,
+                "product_type_id": home.id,
+            },
+        )
+        assert response.status_code == 201
+        product = response.json()
+        assert product["id"] > 0
+        products.append(product)
+
+    response = client.get("/product?offset=0&limit=10&product_type_name=Home0")
+    assert response.status_code == 200
+    products_from_response = response.json()
+    assert len(products_from_response) == 1
+
+
+def test_get_all_products_type():
+    len_products = 10
+    products_type = []
+    home = None
+    for n in range(len_products):
+        home = ProductType.create(name="Home " + str(n))
+        products_type.append(home)
+
+    response = client.get(
+        "/product_type",
+    )
+    assert response.status_code == 200
+    products_from_response = response.json()
+    assert len(products_from_response) == len_products
