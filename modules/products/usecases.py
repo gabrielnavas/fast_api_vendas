@@ -77,10 +77,7 @@ class ProductUsecase:
                 .offset(offset)
                 .limit(limit)
             )
-        else:
-            return (
-                Product.select().join(ProductType).offset(offset).limit(limit)
-            )
+        return Product.select().join(ProductType).offset(offset).limit(limit)
 
     def get_all_products_type(self) -> List[Product]:
         return ProductType.select()

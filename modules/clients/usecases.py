@@ -1,3 +1,5 @@
+import functools
+import operator
 from typing import List, Dict, Any, Union
 from datetime import datetime
 
@@ -35,29 +37,28 @@ class ClientUseCase:
     def get_all(
         self, query: Dict[str, Any], offset=0, limit=10
     ) -> List[Client]:
+        # set None if no query params
+        query_list = [
+            Client.name.contains(query["name"])
+            if query["name"] is not None and len(query["name"]) > 0
+            else None,
+            Client.phone.contains(query["phone"])
+            if query["phone"] is not None and len(query["phone"]) > 0
+            else None,
+        ]
+        # remove nones
+        query_list_remove_none = list(
+            filter(lambda query: query is not None, query_list)
+        )
 
-        if limit == 0:
-            clients = (
-                Client.select()
-                .where(
-                    (Client.name.contains(query.get("name", "")))
-                    | (Client.phone.contains(query.get("phone", "")))
-                )
-                .offset(offset)
+        if len(query_list_remove_none) > 0:
+            query_or_operator = functools.reduce(
+                operator.or_, query_list_remove_none
             )
-            return clients
-
-        if len(query) > 0:
-            clients = (
+            return (
                 Client.select()
-                .where(
-                    (Client.name.contains(query.get("name", "")))
-                    | (Client.phone.contains(query.get("phone", "")))
-                )
+                .where(query_or_operator)
                 .offset(offset)
                 .limit(limit)
             )
-            return clients
-
-        clients = Client.select().offset(offset).limit(limit)
-        return clients
+        return Client.select().offset(offset).limit(limit)

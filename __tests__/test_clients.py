@@ -112,14 +112,13 @@ def test_get_one_product():
     assert datetime.fromisoformat(client_result["created_at"])
 
 
-def test_get_all_products():
+def test_get_all_products_without_query():
     # create client
-    len_product = 11
-    products = []
+    clients_created = []
     name_test = "Gabriel"
     phone_test = "18997865522"
 
-    for product in range(len_product):
+    for _ in range(11):
         response = client.post(
             "/client",
             json={
@@ -129,13 +128,69 @@ def test_get_all_products():
         )
         assert response.status_code == 201
         client_result = response.json()
-        products.append(client_result)
+        clients_created.append(client_result)
         assert client_result["id"] > 0
 
     # get all
     response = client.get(
-        f"/client?name={name_test[0:2]}&phone={phone_test[0:3]}&offset=1&limit=9",
+        "/client",
     )
     assert response.status_code == 200
-    client_result = response.json()
-    assert len(client_result) == 9
+    clients_result = response.json()
+    assert len(clients_result) == 10
+
+
+def test_get_all_products():
+    # create client
+    clients_created = []
+    name_test = "Gabriel"
+    phone_test = "18997865522"
+
+    for _ in range(11):
+        response = client.post(
+            "/client",
+            json={
+                "name": name_test,
+                "phone": phone_test,
+            },
+        )
+        assert response.status_code == 201
+        client_result = response.json()
+        clients_created.append(client_result)
+        assert client_result["id"] > 0
+
+    # get all
+    response = client.get(
+        f"/client?name={name_test}&phone={phone_test}&offset=1&limit=9",
+    )
+    assert response.status_code == 200
+    clients_result = response.json()
+    assert len(clients_result) == 9
+
+
+def test_get_all_products_with_offset_limit():
+    # create client
+    clients_created = []
+    name_test = "Gabriel"
+    phone_test = "18997865522"
+
+    for _ in range(11):
+        response = client.post(
+            "/client",
+            json={
+                "name": name_test,
+                "phone": phone_test,
+            },
+        )
+        assert response.status_code == 201
+        client_result = response.json()
+        clients_created.append(client_result)
+        assert client_result["id"] > 0
+
+    # get all
+    response = client.get(
+        "/client?offset=0&limit=10",
+    )
+    assert response.status_code == 200
+    clients_result = response.json()
+    assert len(clients_result) == 10
